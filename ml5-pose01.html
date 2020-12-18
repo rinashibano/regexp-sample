@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>ビデオで認識</title>
+
+    <!-- 1. ここにP5.jsを読み込む -->
+    <script src="https://cdn.jsdelivr.net/npm/p5"></script>
+    <script src="https://unpkg.com/ml5@0.4.3/dist/ml5.min.js"></script>
+
+    <!-- 2.以下にsetup関数とdraw関数を定義 -->
+    <script>
+      let video;
+      let poseNet;
+      let poses = [];
+      let skeletons = [];
+      var stampNose = new Image();
+      var stampEars = new Image();
+      stampEars = "image/i.jpg";
+      stampNose = "image/u.jpg";
+
+      function setup() {
+        createCanvas(640, 480);
+        video = createCapture(VIDEO);
+
+        // Create a new poseNet method with a single detection
+        poseNet = ml5.poseNet(video, modelReady);
+        // This sets up an event that fills the global variable "poses"
+        // with an array every time new poses are detected
+        poseNet.on("pose", function (results) {
+          poses = results;
+        });
+        // Hide the video element, and just show the canvas
+        video.hide();
+      }
+
+      function modelReady() {
+        select("#status").html("Model Loaded");
+      }
+
+      function draw() {
+        image(video, 0, 0, width, height);
+
+        // We can call both functions to draw all keypoints and the skeletons
+        drawKeypoints();
+        //drawSkeleton();
+      }
+
+      // A function to draw ellipses over the detected keypoints
+      function drawKeypoints() {
+        // Loop through all the poses detected
+        for (let i = 0; i < poses.length; i++) {
+          // For each pose detected, loop through all the keypoints
+          for (let j = 0; j < poses[i].pose.keypoints.length; j++) {
+            // A keypoint is an object describing a body part (like rightArm or leftShoulder)
+            let keypoint = poses[i].pose.keypoints[j];
+            // Only draw an ellipse is the pose probability is bigger than 0.2
+            // if (keypoint.score > 0.2) {
+            //   fill(255, 0, 0);
+            //   noStroke();
+            //   ellipse(keypoint.position.x, keypoint.position.y, 10, 10);
+            //   fill(10, 10, 10);
+            // }
+            let nose = poses[i].pose.keypoints[0];
+            fill(255, 0, 0);
+            noStroke();
+            ellipse(nose.position.x, nose.position.y, 50, 50);
+
+            let reye = poses[i].pose.keypoints[1];
+            fill(255);
+            noStroke();
+            ellipse(reye.position.x, reye.position.y, 30, 40);
+            fill(0);
+            ellipse(reye.position.x, reye.position.y, 10, 10);
+
+            let leye = poses[i].pose.keypoints[2];
+            fill(255);
+            noStroke();
+            ellipse(leye.position.x, leye.position.y, 30, 40);
+            fill(0);
+            ellipse(leye.position.x, leye.position.y, 10, 10);
+
+            let rm = poses[i].pose.keypoints[4];
+            fill(244, 219, 49);
+            noStroke();
+            rect(rm.position.x, rm.position.y, 20, 40);
+
+            let lm = poses[i].pose.keypoints[3];
+            fill(244, 219, 49);
+            noStroke();
+            rect(lm.position.x, lm.position.y, 20, 40);
+          }
+        }
+      }
+
+      // A function to draw the skeletons
+      // function drawSkeleton() {
+      //   // Loop through all the skeletons detected
+      //   for (let i = 0; i < poses.length; i++) {
+      //     // For every skeleton, loop through all body connections
+      //     for (let j = 0; j < poses[i].skeleton.length; j++) {
+      //       let partA = poses[i].skeleton[j][0];
+      //       let partB = poses[i].skeleton[j][1];
+
+      //       stroke(255, 0, 0);
+      //       line(
+      //         partA.position.x,
+      //         partA.position.y,
+      //         partB.position.x,
+      //         partB.position.y
+      //       );
+      //     }
+      //   }
+      // }
+    </script>
+  </head>
+  <body>
+    <div id="status"></div>
+    <div id="result"></div>
+    <div id="probability"></div>
+  </body>
+</html>
